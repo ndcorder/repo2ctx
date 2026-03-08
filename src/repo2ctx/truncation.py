@@ -8,12 +8,27 @@ from repo2ctx.tokens import count_tokens
 # Node types that represent function/class definitions by language
 DEFINITION_TYPES: dict[str, set[str]] = {
     "python": {"function_definition", "class_definition"},
-    "javascript": {"function_declaration", "class_declaration", "method_definition",
-                   "arrow_function", "function"},
-    "typescript": {"function_declaration", "class_declaration", "method_definition",
-                   "arrow_function", "function"},
-    "tsx": {"function_declaration", "class_declaration", "method_definition",
-            "arrow_function", "function"},
+    "javascript": {
+        "function_declaration",
+        "class_declaration",
+        "method_definition",
+        "arrow_function",
+        "function",
+    },
+    "typescript": {
+        "function_declaration",
+        "class_declaration",
+        "method_definition",
+        "arrow_function",
+        "function",
+    },
+    "tsx": {
+        "function_declaration",
+        "class_declaration",
+        "method_definition",
+        "arrow_function",
+        "function",
+    },
     "go": {"function_declaration", "method_declaration"},
     "rust": {"function_item", "impl_item", "struct_item", "enum_item"},
 }

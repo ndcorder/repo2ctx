@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -29,7 +29,7 @@ def main(
         typer.Option("--max-tokens", "-t", help="Token budget."),
     ] = 128_000,
     focus: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--focus", "-f", help="Focus on specific file/directory."),
     ] = None,
     fmt: Annotated[
@@ -37,11 +37,11 @@ def main(
         typer.Option("--format", help="Output format: markdown, xml, json."),
     ] = "markdown",
     include: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--include", "-i", help="Include only matching files (glob)."),
     ] = None,
     exclude: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--exclude", "-e", help="Exclude matching files (glob)."),
     ] = None,
     model: Annotated[
@@ -49,7 +49,7 @@ def main(
         typer.Option("--model", "-m", help="Token model: openai or claude."),
     ] = "openai",
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--output", "-o", help="Write output to file."),
     ] = None,
 ) -> None:

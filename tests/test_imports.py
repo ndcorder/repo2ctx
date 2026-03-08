@@ -8,8 +8,8 @@ from repo2ctx.imports import (
     resolve_import_to_file,
 )
 
-
 # --- Language detection ---
+
 
 def test_detect_python():
     assert detect_language(Path("foo.py")) == "python"
@@ -40,6 +40,7 @@ def test_detect_unknown():
 
 # --- Python imports ---
 
+
 def test_python_import():
     source = b"import os\nimport sys"
     result = extract_imports(source, "python")
@@ -62,6 +63,7 @@ def test_python_mixed_imports():
 
 # --- JavaScript imports ---
 
+
 def test_js_import():
     source = b"import React from 'react';\nimport { useState } from 'react';"
     result = extract_imports(source, "javascript")
@@ -83,6 +85,7 @@ def test_js_relative_import():
 
 # --- TypeScript imports ---
 
+
 def test_ts_import():
     source = b"import { Component } from '@angular/core';"
     result = extract_imports(source, "typescript")
@@ -90,6 +93,7 @@ def test_ts_import():
 
 
 # --- Go imports ---
+
 
 def test_go_single_import():
     source = b'package main\n\nimport "fmt"'
@@ -106,6 +110,7 @@ def test_go_grouped_import():
 
 # --- Rust imports ---
 
+
 def test_rust_use():
     source = b"use std::collections::HashMap;"
     result = extract_imports(source, "rust")
@@ -119,6 +124,7 @@ def test_rust_extern_crate():
 
 
 # --- Import resolution ---
+
 
 def test_resolve_python_import():
     files = ["foo.py", "bar/baz.py", "bar/__init__.py"]

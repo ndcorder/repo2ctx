@@ -18,6 +18,7 @@ def git_recency_scores(root: Path, files: list[str]) -> dict[str, float]:
     """
     try:
         from git import Repo
+
         repo = Repo(root, search_parent_directories=True)
     except Exception:
         # No git repo — all files get equal score
@@ -105,19 +106,9 @@ def compute_scores(
         focus_sc = focus_scores(files, graph, focus)
         # Weighted combination with focus
         return {
-            f: (
-                0.3 * pagerank.get(f, 0.0)
-                + 0.3 * recency.get(f, 0.0)
-                + 0.4 * focus_sc.get(f, 0.0)
-            )
+            f: (0.3 * pagerank.get(f, 0.0) + 0.3 * recency.get(f, 0.0) + 0.4 * focus_sc.get(f, 0.0))
             for f in files
         }
     else:
         # No focus: just centrality + recency
-        return {
-            f: (
-                0.6 * pagerank.get(f, 0.0)
-                + 0.4 * recency.get(f, 0.0)
-            )
-            for f in files
-        }
+        return {f: (0.6 * pagerank.get(f, 0.0) + 0.4 * recency.get(f, 0.0)) for f in files}

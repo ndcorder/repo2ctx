@@ -1,7 +1,6 @@
 """Tests for scoring."""
 
 from pathlib import Path
-from unittest.mock import patch
 
 from repo2ctx.graph import DependencyGraph
 from repo2ctx.scoring import compute_scores, focus_scores, git_recency_scores

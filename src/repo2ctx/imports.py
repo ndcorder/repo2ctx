@@ -38,20 +38,25 @@ def _get_language(language: str) -> Language | None:
     try:
         if language == "python":
             import tree_sitter_python as tsp
+
             return Language(tsp.language())
         elif language == "javascript":
             import tree_sitter_javascript as tsjs
+
             return Language(tsjs.language())
         elif language in ("typescript", "tsx"):
             import tree_sitter_typescript as tsts
+
             if language == "tsx":
                 return Language(tsts.language_tsx())
             return Language(tsts.language_typescript())
         elif language == "go":
             import tree_sitter_go as tsgo
+
             return Language(tsgo.language())
         elif language == "rust":
             import tree_sitter_rust as tsrs
+
             return Language(tsrs.language())
     except ImportError:
         pass
@@ -143,7 +148,12 @@ def _extract_rust_imports(root) -> list[str]:
         if node.type == "use_declaration":
             # Extract the path from use declarations
             for child in node.children:
-                if child.type in ("scoped_identifier", "identifier", "use_wildcard", "scoped_use_list"):
+                if child.type in (
+                    "scoped_identifier",
+                    "identifier",
+                    "use_wildcard",
+                    "scoped_use_list",
+                ):
                     text = child.text.decode()
                     # Get the top-level crate name
                     top = text.split("::")[0]

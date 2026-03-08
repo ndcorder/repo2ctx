@@ -77,26 +77,30 @@ def allocate_budget(
 
         actual = file_tokens[path]
         if actual <= allocated:
-            allocations.append(BudgetAllocation(
-                file_path=path,
-                allocated_tokens=allocated,
-                actual_tokens=actual,
-                content=content,
-                truncated=False,
-            ))
+            allocations.append(
+                BudgetAllocation(
+                    file_path=path,
+                    allocated_tokens=allocated,
+                    actual_tokens=actual,
+                    content=content,
+                    truncated=False,
+                )
+            )
         else:
             lang = (languages or {}).get(path)
             if lang:
                 truncated_content = smart_truncate(content, lang, allocated, model)
             else:
                 truncated_content = _simple_truncate(content, allocated, model)
-            allocations.append(BudgetAllocation(
-                file_path=path,
-                allocated_tokens=allocated,
-                actual_tokens=count_tokens(truncated_content, model),
-                content=truncated_content,
-                truncated=True,
-            ))
+            allocations.append(
+                BudgetAllocation(
+                    file_path=path,
+                    allocated_tokens=allocated,
+                    actual_tokens=count_tokens(truncated_content, model),
+                    content=truncated_content,
+                    truncated=True,
+                )
+            )
 
     return allocations
 

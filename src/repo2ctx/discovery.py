@@ -26,14 +26,45 @@ SKIP_DIRS = {
 }
 
 BINARY_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg",
-    ".woff", ".woff2", ".ttf", ".eot",
-    ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar",
-    ".exe", ".dll", ".so", ".dylib", ".o", ".a",
-    ".pyc", ".pyo", ".class",
-    ".pdf", ".doc", ".docx", ".xls", ".xlsx",
-    ".mp3", ".mp4", ".wav", ".avi", ".mov",
-    ".sqlite", ".db",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".xz",
+    ".7z",
+    ".rar",
+    ".exe",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".o",
+    ".a",
+    ".pyc",
+    ".pyo",
+    ".class",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".mp3",
+    ".mp4",
+    ".wav",
+    ".avi",
+    ".mov",
+    ".sqlite",
+    ".db",
     ".DS_Store",
 }
 
@@ -80,11 +111,14 @@ def _get_gitignored_files(root: Path) -> set[str]:
     """Get set of gitignored file paths relative to root."""
     try:
         from git import Repo
+
         repo = Repo(root, search_parent_directories=True)
         # Get all ignored files
         ignored = set()
         try:
-            ignored_files = repo.git.ls_files("--others", "--ignored", "--exclude-standard", "--directory")
+            ignored_files = repo.git.ls_files(
+                "--others", "--ignored", "--exclude-standard", "--directory"
+            )
             if ignored_files:
                 for line in ignored_files.strip().split("\n"):
                     if line:
@@ -131,12 +165,14 @@ def discover_files(
         except OSError:
             continue
 
-        files.append(FileInfo(
-            path=item,
-            relative_path=rel,
-            size=size,
-            extension=item.suffix,
-        ))
+        files.append(
+            FileInfo(
+                path=item,
+                relative_path=rel,
+                size=size,
+                extension=item.suffix,
+            )
+        )
 
     return sorted(files, key=lambda f: f.relative_path)
 
