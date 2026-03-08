@@ -78,24 +78,27 @@ def smart_truncate(source: str, language: str, max_tokens: int, model: str = "op
         end_line = body_node.end_point[0]
 
         # Check if this body has a docstring as the first statement
+        has_docstring = False
         docstring_end_line = start_line
         if language == "python" and body_node.children:
             first_child = body_node.children[0]
             if first_child.type == "expression_statement" and first_child.children:
                 expr = first_child.children[0]
                 if expr.type == "string":
+                    has_docstring = True
                     docstring_end_line = expr.end_point[0]
 
-        # Replace body content (after docstring) with ...
-        if docstring_end_line > start_line:
-            # Keep docstring, truncate rest
-            truncated_ranges.append((docstring_end_line + 1, end_line, "..."))
+        # Get indentation of the body
+        if start_line < len(lines):
+            indent = _get_indent(lines[start_line])
         else:
-            # Get indentation of the body
-            if start_line < len(lines):
-                indent = _get_indent(lines[start_line])
-            else:
-                indent = "    "
+            indent = "    "
+
+        # Replace body content (after docstring) with ...
+        if has_docstring and docstring_end_line < end_line:
+            # Keep docstring, truncate rest
+            truncated_ranges.append((docstring_end_line + 1, end_line, f"{indent}..."))
+        else:
             truncated_ranges.append((start_line, end_line, f"{indent}..."))
 
         # Check if we're under budget now
