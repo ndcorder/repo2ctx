@@ -109,3 +109,12 @@ def test_discover_keeps_github_dir(tmp_path: Path):
     files = discover_files(tmp_path)
     assert len(files) == 1
     assert files[0].relative_path == ".github/workflows/ci.yml"
+
+
+def test_discover_skips_egg_info(tmp_path: Path):
+    (tmp_path / "mypackage.egg-info").mkdir()
+    (tmp_path / "mypackage.egg-info" / "PKG-INFO").write_text("Name: mypackage")
+    (tmp_path / "setup.py").write_text("pass")
+    files = discover_files(tmp_path)
+    assert len(files) == 1
+    assert files[0].relative_path == "setup.py"

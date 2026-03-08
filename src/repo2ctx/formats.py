@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from xml.sax.saxutils import escape as xml_escape
 
 from repo2ctx.budget import BudgetAllocation
 
@@ -128,21 +129,22 @@ def _format_xml(
         parts.append("  <summary>")
         for key, value in stats.items():
             safe_key = key.lower().replace(" ", "-")
-            parts.append(f"    <{safe_key}>{value}</{safe_key}>")
+            parts.append(f"    <{safe_key}>{xml_escape(str(value))}</{safe_key}>")
         parts.append("  </summary>")
 
     # File tree
     if file_tree:
         parts.append("  <file-tree>")
-        parts.append(file_tree)
+        parts.append(xml_escape(file_tree))
         parts.append("  </file-tree>")
 
     # Files
     parts.append("  <files>")
     for alloc in allocations:
         truncated_attr = ' truncated="true"' if alloc.truncated else ""
-        parts.append(f'    <file path="{alloc.file_path}"{truncated_attr}>')
-        parts.append(alloc.content)
+        escaped_path = xml_escape(alloc.file_path, {'"': "&quot;"})
+        parts.append(f'    <file path="{escaped_path}"{truncated_attr}>')
+        parts.append(xml_escape(alloc.content))
         parts.append("    </file>")
     parts.append("  </files>")
 

@@ -22,7 +22,7 @@ def detect_language(path: Path) -> str | None:
     return LANGUAGE_MAP.get(path.suffix.lower())
 
 
-def _get_parser(language: str) -> Parser | None:
+def get_parser(language: str) -> Parser | None:
     """Get a tree-sitter parser for the given language."""
     try:
         lang_obj = _get_language(language)
@@ -73,7 +73,7 @@ def extract_imports(source: bytes, language: str) -> list[str]:
     Returns:
         List of imported module/file names.
     """
-    parser = _get_parser(language)
+    parser = get_parser(language)
     if parser is None:
         return _extract_imports_regex(source.decode("utf-8", errors="replace"), language)
 

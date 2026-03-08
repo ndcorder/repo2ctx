@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
 
 
@@ -79,61 +80,39 @@ class DependencyGraph:
     def topological_sort(self) -> list[str]:
         """Topological sort: dependencies before dependents.
 
-        Uses Kahn's algorithm. If there are cycles, remaining nodes
-        are appended in arbitrary order.
+        Uses Kahn's algorithm. edges[A] = {B} means A imports B,
+        so B must come before A. In-degree counts how many imports
+        each node has (i.e., how many things it depends on).
+
+        If there are cycles, remaining nodes are appended in sorted order.
         """
         all_nodes = self.nodes
         in_degree: dict[str, int] = {n: 0 for n in all_nodes}
-
         for node, deps in self.edges.items():
-            for dep in deps:
-                # node imports dep, so dep should come first
-                # This means node has an incoming edge from dep
-                if node in in_degree:
-                    in_degree[node] += 1
-
-        # Wait, let me reconsider. edges[A] = {B} means A imports B.
-        # We want B before A. So the topological order is:
-        # edge direction: A -> B (A depends on B)
-        # Topological sort should put B before A.
-        # In-degree of A = number of things A imports (edges[A] size)? No.
-        # Actually for topo sort, we need: for each edge A->B, B comes before A.
-        # That's reversed from standard topo sort.
-        # Standard: for edge u->v, u before v.
-        # We want: for edge A->B (A imports B), B before A.
-        # So we reverse: edge B->A in standard form.
-
-        # Recompute with correct direction
-        in_degree = {n: 0 for n in all_nodes}
-        for node, deps in self.edges.items():
-            # node imports deps, so node should come after deps
-            # In reversed graph: deps -> node
-            # node's in-degree = len(deps)
             in_degree[node] = in_degree.get(node, 0) + len(deps)
             for dep in deps:
                 if dep not in in_degree:
                     in_degree[dep] = 0
 
-        # Start with nodes that have no dependencies (in_degree == 0)
-        queue = [n for n in sorted(all_nodes) if in_degree.get(n, 0) == 0]
+        queue = deque(n for n in sorted(all_nodes) if in_degree.get(n, 0) == 0)
         result: list[str] = []
         visited: set[str] = set()
 
         while queue:
-            node = queue.pop(0)
+            node = queue.popleft()
             if node in visited:
                 continue
             visited.add(node)
             result.append(node)
 
-            # Find all nodes that import this node
+            # Find all nodes that import this node — they can now be processed
             for other, deps in self.edges.items():
                 if node in deps and other not in visited:
                     in_degree[other] -= 1
                     if in_degree[other] <= 0:
                         queue.append(other)
 
-        # Add any remaining nodes (cycles)
+        # Append remaining nodes (cycles) in sorted order
         for node in sorted(all_nodes):
             if node not in visited:
                 result.append(node)

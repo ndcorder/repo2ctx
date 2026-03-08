@@ -86,3 +86,19 @@ def test_format_default_is_markdown():
     allocs = _make_allocations()
     result = format_output(allocs, "")
     assert "# Repository Context" in result
+
+
+def test_xml_escapes_special_chars():
+    allocs = [
+        BudgetAllocation(
+            file_path='src/a<b>.py',
+            allocated_tokens=100,
+            actual_tokens=50,
+            content='x = "a & b < c"',
+            truncated=False,
+        ),
+    ]
+    result = format_output(allocs, "", fmt="xml")
+    assert "&lt;b&gt;" in result
+    assert "&amp;" in result
+    assert "</file>" in result  # structure intact

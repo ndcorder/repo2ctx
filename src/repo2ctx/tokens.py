@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import functools
+
 import tiktoken
 
 
@@ -20,11 +22,15 @@ def count_tokens(text: str, model: str = "openai") -> int:
     return _count_openai_tokens(text)
 
 
+@functools.cache
+def _get_encoding():
+    return tiktoken.get_encoding("cl100k_base")
+
+
 def _count_openai_tokens(text: str) -> int:
-    enc = tiktoken.get_encoding("cl100k_base")
-    return len(enc.encode(text))
+    return len(_get_encoding().encode(text))
 
 
 def _count_claude_tokens(text: str) -> int:
     # Claude uses ~4 characters per token on average
-    return max(1, len(text) // 4)
+    return len(text) // 4

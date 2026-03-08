@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from repo2ctx.imports import _get_parser
+from repo2ctx.imports import get_parser
 from repo2ctx.tokens import count_tokens
 
 # Node types that represent function/class definitions by language
@@ -68,7 +68,7 @@ def smart_truncate(source: str, language: str, max_tokens: int, model: str = "op
     if current_tokens <= max_tokens:
         return source
 
-    parser = _get_parser(language)
+    parser = get_parser(language)
     if parser is None:
         return _naive_truncate(source, max_tokens, model)
 

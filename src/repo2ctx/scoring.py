@@ -11,7 +11,8 @@ from repo2ctx.graph import DependencyGraph
 def git_recency_scores(root: Path, files: list[str]) -> dict[str, float]:
     """Score files by git recency using exponential decay.
 
-    Most recently modified files get higher scores.
+    Uses a single `git log` call to batch-extract timestamps,
+    avoiding one subprocess per file.
 
     Returns:
         Dict of file path -> score in [0, 1].
@@ -21,26 +22,65 @@ def git_recency_scores(root: Path, files: list[str]) -> dict[str, float]:
 
         repo = Repo(root, search_parent_directories=True)
     except Exception:
-        # No git repo — all files get equal score
         return {f: 0.5 for f in files}
 
     now = time.time()
+    decay = 30 * 24 * 3600  # half-life ~30 days
+
+    file_timestamps = _batch_git_timestamps(repo, set(files))
+
     scores: dict[str, float] = {}
-    # Decay constant: half-life of ~30 days
-    decay = 30 * 24 * 3600
-
     for filepath in files:
-        try:
-            commits = list(repo.iter_commits(paths=filepath, max_count=1))
-            if commits:
-                age_seconds = now - commits[0].committed_date
-                scores[filepath] = 2.0 ** (-age_seconds / decay)
-            else:
-                scores[filepath] = 0.1  # Never committed
-        except Exception:
+        ts = file_timestamps.get(filepath)
+        if ts is not None:
+            age_seconds = now - ts
+            scores[filepath] = 2.0 ** (-age_seconds / decay)
+        else:
             scores[filepath] = 0.1
-
     return scores
+
+
+def _batch_git_timestamps(repo, target_files: set[str]) -> dict[str, float]:
+    """Get most recent commit timestamp for each file via a single git log call.
+
+    Parses `git log --format=%ct --name-only` output which produces blocks of:
+        <timestamp>
+        <blank line>
+        <filename1>
+        <filename2>
+        <blank line>
+    """
+    result: dict[str, float] = {}
+    try:
+        log_output = repo.git.log("--format=%ct", "--name-only")
+    except Exception:
+        return result
+
+    if not log_output.strip():
+        return result
+
+    current_ts: float | None = None
+    for line in log_output.split("\n"):
+        line = line.strip()
+        if not line:
+            current_ts = None
+            continue
+        # Try to parse as timestamp (integer)
+        if current_ts is None:
+            try:
+                current_ts = float(line)
+            except ValueError:
+                pass
+            continue
+        # It's a filename — record if it's a target and not yet seen
+        if line in target_files and line not in result:
+            result[line] = current_ts
+
+        # Early exit once we've found all files
+        if len(result) == len(target_files):
+            break
+
+    return result
 
 
 def focus_scores(

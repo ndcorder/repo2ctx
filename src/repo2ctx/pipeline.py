@@ -78,7 +78,8 @@ def run(
     topo_order = graph.topological_sort()
     # Include files not in graph
     ordered_paths = [p for p in topo_order if p in file_contents]
-    remaining = [p for p in all_paths if p not in set(ordered_paths) and p in file_contents]
+    ordered_set = set(ordered_paths)
+    remaining = [p for p in all_paths if p not in ordered_set and p in file_contents]
     ordered_paths.extend(remaining)
 
     # Reorder file_contents to match

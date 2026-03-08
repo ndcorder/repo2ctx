@@ -73,7 +73,8 @@ def allocate_budget(
     for path, content in files.items():
         score = scores.get(path, 0.01)
         allocated = int((score / total_score) * available)
-        allocated = max(allocated, 50)  # Minimum 50 tokens per file
+        min_per_file = max(10, available // (len(files) * 2))
+        allocated = max(allocated, min(50, min_per_file))
 
         actual = file_tokens[path]
         if actual <= allocated:

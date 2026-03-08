@@ -27,7 +27,7 @@ def test_claude_count_basic():
 
 def test_claude_count_empty():
     result = count_tokens("", "claude")
-    assert result == 1  # min 1
+    assert result == 0
 
 
 def test_claude_count_long_text():
@@ -46,3 +46,8 @@ def test_consistency_within_2_percent():
     count1 = count_tokens(text, "openai")
     count2 = count_tokens(text, "openai")
     assert count1 == count2
+
+
+def test_both_models_return_zero_for_empty():
+    assert count_tokens("", "openai") == 0
+    assert count_tokens("", "claude") == 0

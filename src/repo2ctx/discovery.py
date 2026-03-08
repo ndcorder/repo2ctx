@@ -91,7 +91,10 @@ def _is_binary(path: Path) -> bool:
 def _should_skip_dir(name: str) -> bool:
     if name.startswith(".") and name != ".github":
         return True
-    return name in SKIP_DIRS
+    if name in SKIP_DIRS:
+        return True
+    # Match glob patterns in SKIP_DIRS (e.g. *.egg-info)
+    return any(fnmatch.fnmatch(name, p) for p in SKIP_DIRS if "*" in p)
 
 
 def _matches_any(path: str, patterns: list[str]) -> bool:
