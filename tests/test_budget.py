@@ -1,6 +1,6 @@
 """Tests for budget allocation."""
 
-from repo2ctx.budget import BudgetAllocation, allocate_budget
+from repo2ctx.budget import BudgetAllocation, allocate_budget, _simple_truncate
 
 
 def test_allocate_within_budget():
@@ -48,3 +48,38 @@ def test_budget_allocation_dataclass():
     )
     assert a.file_path == "test.py"
     assert a.allocated_tokens == 100
+
+
+def test_allocate_zero_scores():
+    """All files have 0.0 scores — hits the total_score == 0 branch."""
+    content_a = "x = 1\n" * 200
+    content_b = "y = 2\n" * 200
+    files = {"a.py": content_a, "b.py": content_b}
+    scores = {"a.py": 0.0, "b.py": 0.0}
+    result = allocate_budget(files, scores, max_tokens=200, model="claude")
+    assert len(result) == 2
+    # With zero scores, should still allocate (using fallback total_score)
+    for alloc in result:
+        assert alloc.allocated_tokens > 0
+
+
+def test_simple_truncate():
+    """Test _simple_truncate directly to hit the truncation marker line."""
+    content = "line\n" * 100
+    result = _simple_truncate(content, max_tokens=5, model="claude")
+    assert "truncated" in result
+    assert len(result) < len(content)
+
+
+def test_allocate_with_language_hint():
+    """Pass languages parameter to trigger language-aware truncation path."""
+    big_content = "def foo():\n    return 'bar'\n" * 500
+    small_content = "x = 1"
+    files = {"big.py": big_content, "small.py": small_content}
+    scores = {"big.py": 0.5, "small.py": 0.5}
+    languages = {"big.py": "python", "small.py": "python"}
+    result = allocate_budget(
+        files, scores, max_tokens=100, model="claude", languages=languages
+    )
+    big_alloc = next(a for a in result if a.file_path == "big.py")
+    assert big_alloc.truncated
